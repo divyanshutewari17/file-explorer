@@ -5,6 +5,7 @@ interface ContextMenuProps {
   x: number;
   y: number;
   options: { label: string; action: () => void }[];
+  onClose: () => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, options }) => {
