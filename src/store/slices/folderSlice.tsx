@@ -1,12 +1,16 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Folder, FolderState } from '../../types';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Folder } from "../../types";
+
+interface FolderState {
+  folders: Folder[];
+}
 
 const initialState: FolderState = {
   folders: [],
 };
 
 const folderSlice = createSlice({
-  name: 'folders',
+  name: "folders",
   initialState,
   reducers: {
     addFolder: (state, action: PayloadAction<Folder>) => {
@@ -21,10 +25,15 @@ const folderSlice = createSlice({
         folder.name = action.payload.name;
       }
     },
-    moveFolder: (state, action: PayloadAction<{ id: string; newParentId: string | null }>) => {
-      const folder = state.folders.find(folder => folder.id === action.payload.id);
-      if (folder) {
-        folder.parentId = action.payload.newParentId;
+    /** 📌 New reducer to handle folder movement */
+    moveFolder: (state, action: PayloadAction<{ fromId: string; toId: string }>) => {
+      const { fromId, toId } = action.payload;
+      const fromIndex = state.folders.findIndex((f) => f.id === fromId);
+      const toIndex = state.folders.findIndex((f) => f.id === toId);
+
+      if (fromIndex !== -1 && toIndex !== -1) {
+        const [movedFolder] = state.folders.splice(fromIndex, 1);
+        state.folders.splice(toIndex, 0, movedFolder);
       }
     },
   },

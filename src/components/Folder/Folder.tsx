@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { useDrag } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { useDispatch } from 'react-redux';
-import { deleteFolder, updateFolderName } from '../../store/slices/folderSlice';
-import FolderContainer, { FolderName } from './Folder.styles';
+import { deleteFolder, moveFolder, updateFolderName } from '../../store/slices/folderSlice';
+import FolderContainer,{ FolderName, FolderIcon } from './Folder.styles';
 import { Folder as FolderType } from '../../types';
+import {FaFolder} from 'react-icons/fa'; // Folder icon
 
 interface FolderProps {
   folder: FolderType;
@@ -15,24 +16,30 @@ const Folder: React.FC<FolderProps> = ({ folder }) => {
   const [newName, setNewName] = useState(folder.name);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Use the useDrag hook to make the folder draggable
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: 'FOLDER', // Define the type of draggable item
-    item: { id: folder.id }, // Data to be passed to the drop target
+  const [{ isDragging }, drag] = useDrag({
+    type: "FOLDER",
+    item: { id: folder.id },
     collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(), // Track whether the folder is being dragged
+      isDragging: !!monitor.isDragging(),
     }),
-  }));
+  });
 
-  // Assign the drag function to the ref
-  drag(ref);
+  /** 📌 Dropping Logic */
+  const [, drop] = useDrop({
+    accept: "FOLDER",
+    drop: (draggedFolder: { id: string }) => {
+      if (draggedFolder.id !== folder.id) {
+        dispatch(moveFolder({ fromId: draggedFolder.id, toId: folder.id }));
+      }
+    },
+  });
 
-  // Handle folder deletion
+  drag(drop(ref));
+
   const handleDelete = () => {
     dispatch(deleteFolder(folder.id));
   };
 
-  // Handle folder renaming
   const handleRename = () => {
     if (newName.trim()) {
       dispatch(updateFolderName({ id: folder.id, name: newName }));
@@ -42,14 +49,11 @@ const Folder: React.FC<FolderProps> = ({ folder }) => {
 
   return (
     <FolderContainer ref={ref} $isDragging={isDragging}>
+      <FolderIcon>
+        <FaFolder />
+      </FolderIcon>
       {isRenaming ? (
-        <input
-          type="text"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          onBlur={handleRename}
-          autoFocus
-        />
+        <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} onBlur={handleRename} autoFocus />
       ) : (
         <FolderName onDoubleClick={() => setIsRenaming(true)}>{folder.name}</FolderName>
       )}

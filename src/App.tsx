@@ -9,16 +9,11 @@ import { useDrop } from 'react-dnd';
 const App: React.FC = () => {
   const dispatch = useDispatch();
   const folders = useSelector((state: RootState) => state.folders.folders);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; options: { label: string; action: () => void }[] } | null>(null);
-
-  // Drop Target to accept folders
-  const [, drop] = useDrop(() => ({
-    accept: 'FOLDER',
-    drop: (item: { id: string }) => {
-      // Dispatch action to move folder
-      dispatch(moveFolder({ id: item.id, newParentId: null }));
-    },
-  }));
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    options: { label: string; action: () => void }[];
+  } | null>(null);
 
   const handleRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,7 +24,17 @@ const App: React.FC = () => {
         {
           label: 'New Folder',
           action: () => {
-            dispatch(addFolder({ id: Date.now().toString(), name: 'New Folder', parentId: null, children: [] }));
+            const folderNames = folders.map((folder) => folder.name);
+            const baseName = 'New Folder';
+            let newFolderName = baseName;
+            let count = 0;
+
+            while (folderNames.includes(newFolderName)) {
+              count++;
+              newFolderName = `${baseName} ${count}`;
+            }
+
+            dispatch(addFolder({ id: Date.now().toString(), name: newFolderName, parentId: null, children: [] }));
             setContextMenu(null);
           },
         },
@@ -37,21 +42,8 @@ const App: React.FC = () => {
     });
   };
 
-const dropRef = useRef<HTMLDivElement>(null);
-drop(dropRef);
-
   return (
-    <div ref={dropRef} onContextMenu={handleRightClick} style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      position: 'relative', 
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', 
-      gap: '16px', 
-      padding: '20px',
-      justifyContent: 'center',
-      alignContent: 'start'
-    }}>
+    <div onContextMenu={handleRightClick} style={{ width: '100vw', height: '100vh', position: 'relative', display: 'flex', flexWrap: 'wrap', gap: '20px', padding: '20px' }}>
       {folders.map((folder) => (
         <Folder key={folder.id} folder={folder} />
       ))}
@@ -59,5 +51,6 @@ drop(dropRef);
     </div>
   );
 };
+
 
 export default App;
