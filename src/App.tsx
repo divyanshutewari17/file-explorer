@@ -41,17 +41,7 @@ const dropRef = useRef<HTMLDivElement>(null);
 drop(dropRef);
 
   return (
-    <div ref={dropRef} onContextMenu={handleRightClick} style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      position: 'relative', 
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', 
-      gap: '16px', 
-      padding: '20px',
-      justifyContent: 'center',
-      alignContent: 'start'
-    }}>
+    <div ref={dropRef} onContextMenu={handleRightClick}>
       {folders.map((folder) => (
         <Folder key={folder.id} folder={folder} />
       ))}
