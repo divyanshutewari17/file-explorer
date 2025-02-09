@@ -1,5 +1,5 @@
-import React from 'react';
-import { ContextMenuContainer, ContextMenuItem } from './ContextMenu.styles';
+import React from "react";
+import { ContextMenuContainer, ContextMenuItem } from "./ContextMenu.styles";
 
 interface ContextMenuProps {
   x: number;
@@ -8,9 +8,9 @@ interface ContextMenuProps {
   onClose: () => void;
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, options }) => {
+const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, options, onClose }) => {
   return (
-    <ContextMenuContainer style={{ top: y, left: x }}>
+    <ContextMenuContainer style={{ left: x, top: y }}>
       {options.map((option, index) => (
         <ContextMenuItem key={index} onClick={option.action}>
           {option.label}

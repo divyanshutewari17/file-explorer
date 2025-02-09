@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { useDispatch } from "react-redux";
-import { deleteFolder, moveFolder, updateFolderName } from "../../store/slices/folderSlice";
+import { deleteFolder, updateFolderName, updateFolderPosition } from "../../store/slices/folderSlice";
 import FolderContainer, { FolderName, FolderIcon } from "./Folder.styles";
 import { Folder as FolderType } from "../../types";
 import { FaFolder } from "react-icons/fa";
@@ -9,7 +9,7 @@ import { FaFolder } from "react-icons/fa";
 interface FolderProps {
   folder: FolderType;
   onRightClick: (event: React.MouseEvent, folderId: string) => void;
-  isSelected: boolean
+  isSelected: boolean;
 }
 
 const Folder: React.FC<FolderProps> = ({ folder, onRightClick, isSelected }) => {
@@ -21,27 +21,36 @@ const Folder: React.FC<FolderProps> = ({ folder, onRightClick, isSelected }) => 
   // Drag logic
   const [{ isDragging }, drag] = useDrag({
     type: "FOLDER",
-    item: { id: folder.id },
+    item: { id: folder.id, x: folder.x, y: folder.y },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    end: (item, monitor) => {
+      const delta = monitor.getDifferenceFromInitialOffset();
+      if (delta) {
+        const x = Math.round(item.x + delta.x);
+        const y = Math.round(item.y + delta.y);
+
+        // Prevent dragging over the sidebar
+        const sidebarWidth = 200; // Width of the sidebar
+        if (x >= sidebarWidth) {
+          dispatch(updateFolderPosition({ id: folder.id, x, y }));
+        }
+      }
+    },
   });
 
   // Drop logic
   const [, drop] = useDrop({
     accept: "FOLDER",
-    drop: (draggedFolder: { id: string }) => {
+    hover: (draggedFolder: { id: string }) => {
       if (draggedFolder.id !== folder.id) {
-        dispatch(moveFolder({ fromId: draggedFolder.id, toId: folder.id }));
+        // Handle folder movement logic if needed
       }
     },
   });
 
   drag(drop(ref));
-
-  const handleDelete = () => {
-    dispatch(deleteFolder(folder.id));
-  };
 
   const handleRename = () => {
     if (newName.trim()) {
@@ -51,7 +60,13 @@ const Folder: React.FC<FolderProps> = ({ folder, onRightClick, isSelected }) => 
   };
 
   return (
-    <FolderContainer ref={ref} $isDragging={isDragging} onContextMenu={(e) => onRightClick(e, folder.id)} isSelected={isSelected}>
+    <FolderContainer
+      ref={ref}
+      $isDragging={isDragging}
+      style={{ left: folder.x, top: folder.y, position: "absolute" }}
+      onContextMenu={(e) => onRightClick(e, folder.id)}
+      isSelected={isSelected}
+    >
       <FolderIcon>
         <FaFolder />
       </FolderIcon>

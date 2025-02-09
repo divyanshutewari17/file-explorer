@@ -10,7 +10,9 @@ const initialState: FolderState = {
     children: [],
     id: "1439120427290",
     name: "My Folder",
-    parentId: null
+    parentId: null,
+    x: 200, // Initial x position
+    y: 0, // Initial y position
   }],
 };
 
@@ -30,19 +32,15 @@ const folderSlice = createSlice({
         folder.name = action.payload.name;
       }
     },
-    /** 📌 New reducer to handle folder movement */
-    moveFolder: (state, action: PayloadAction<{ fromId: string; toId: string }>) => {
-      const { fromId, toId } = action.payload;
-      const fromIndex = state.folders.findIndex((f) => f.id === fromId);
-      const toIndex = state.folders.findIndex((f) => f.id === toId);
-
-      if (fromIndex !== -1 && toIndex !== -1) {
-        const [movedFolder] = state.folders.splice(fromIndex, 1);
-        state.folders.splice(toIndex, 0, movedFolder);
+    updateFolderPosition: (state, action: PayloadAction<{ id: string; x: number; y: number }>) => {
+      const folder = state.folders.find((f) => f.id === action.payload.id);
+      if (folder) {
+        folder.x = action.payload.x;
+        folder.y = action.payload.y;
       }
     },
   },
 });
 
-export const { addFolder, deleteFolder, updateFolderName, moveFolder } = folderSlice.actions;
+export const { addFolder, deleteFolder, updateFolderName, updateFolderPosition } = folderSlice.actions;
 export default folderSlice.reducer;
