@@ -1,38 +1,21 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Folder from "./components/Folder/Folder";
+import Sidebar from "./components/Sidebar/Sidebar";
 import ContextMenu from "./components/ContextMenu/ContextMenu";
 import { addFolder, deleteFolder, updateFolderName } from "./store/slices/folderSlice";
-import FolderContainer, { FolderIcon } from "./components/Folder/Folder.styles";
-import { FaFolder } from "react-icons/fa";
-import { useRef } from "react";
 
 const App: React.FC = () => {
   const folders = useSelector((state) => (state as any)?.folders?.folders || []);
   const dispatch = useDispatch();
   const [contextMenu, setContextMenu] = useState(null);
-  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
-  const [newFolderName, setNewFolderName] = useState<string>("");
-  const ref = useRef<HTMLDivElement>(null)
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
-  const handleRenameStart = (folderId: string, currentName: string) => {
-    setEditingFolderId(folderId);
-    setNewFolderName(currentName);
-    setContextMenu(null); // Close context menu when renaming starts
+  const renameFolder = (folderId: string) => {
+    setSelectedFolder(folderId);
   };
 
-  const handleRenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewFolderName(e.target.value);
-  };
-
-  const handleRenameSubmit = () => {
-    if (editingFolderId && newFolderName.trim()) {
-      dispatch(updateFolderName({ id: editingFolderId, name: newFolderName }));
-    }
-    setEditingFolderId(null);
-  };
-
-  const handleRightClick = (e: React.MouseEvent, folderId?: string, folderName?: string) => {
+  const handleRightClick = (e: React.MouseEvent, folderId?: string) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -41,7 +24,7 @@ const App: React.FC = () => {
         x: e.clientX,
         y: e.clientY,
         options: [
-          { label: "Rename", action: () => handleRenameStart(folderId, folderName || "New Folder") },
+          { label: "Rename", action: () => renameFolder(folderId) },
           { label: "Delete", action: () => dispatch(deleteFolder(folderId)) },
         ],
       });
@@ -79,51 +62,42 @@ const App: React.FC = () => {
   };
 
   return (
-    <div
-      onContextMenu={(e) => handleRightClick(e)}
-      onClick={() => setContextMenu(null)}
-      style={{ 
-        width: '100vw', 
-        height: '100vh', 
-        position: 'relative', 
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', 
-        gap: '16px', 
-        padding: '20px',
-        justifyContent: 'center',
-        alignContent: 'start'
-      }}
-    >
-      {folders.map((folder) => (
-        <div key={folder.id} onContextMenu={(e) => handleRightClick(e, folder.id, folder.name)}>
-          {editingFolderId === folder.id ? (
-            <FolderContainer ref={ref} >
-              <FolderIcon>
-                <FaFolder />
-              </FolderIcon>
-              <input
-                type="text"
-                value={newFolderName}
-                onChange={handleRenameChange}
-                onBlur={handleRenameSubmit}
-                onKeyDown={(e) => e.key === "Enter" && handleRenameSubmit()}
-                autoFocus
-              />
-            </FolderContainer>
-          ) : (
-            <Folder folder={folder} onRightClick= {handleRightClick}/>
-          )}
-        </div>
-      ))}
+    <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
+      
+      {/* Sidebar Component */}
+      <Sidebar 
+        folders={folders} 
+        selectedFolder={selectedFolder} 
+        onSelectFolder={setSelectedFolder} 
+      />
 
-      {contextMenu && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          options={contextMenu.options}
-          onClose={() => setContextMenu(null)}
-        />
-      )}
+      {/* Main Grid View */}
+      <div
+        onContextMenu={(e) => handleRightClick(e)} 
+        onClick={() => setContextMenu(null)} 
+        style={{ 
+          flex: 1, 
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", 
+          gap: "16px", 
+          padding: "20px",
+          justifyContent: "center",
+          alignContent: "start",
+        }}
+      >
+        {folders.map((folder) => (
+          <Folder key={folder.id} folder={folder} onRightClick={handleRightClick} isSelected={selectedFolder === folder.id} />
+        ))}
+
+        {contextMenu && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            options={contextMenu.options}
+            onClose={() => setContextMenu(null)}
+          />
+        )}
+      </div>
     </div>
   );
 };

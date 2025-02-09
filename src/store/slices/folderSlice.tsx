@@ -6,7 +6,12 @@ interface FolderState {
 }
 
 const initialState: FolderState = {
-  folders: [],
+  folders: [{
+    children: [],
+    id: "1439120427290",
+    name: "My Folder",
+    parentId: null
+  }],
 };
 
 const folderSlice = createSlice({

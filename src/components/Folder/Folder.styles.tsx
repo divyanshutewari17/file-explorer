@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 interface FolderContainerProps {
   $isDragging?: boolean;
+  isSelected?: boolean
 }
 
 const FolderContainer = styled.div<FolderContainerProps>`
@@ -10,7 +11,7 @@ const FolderContainer = styled.div<FolderContainerProps>`
   padding: 10px;
   margin: 15px; /* Added spacing */
   border-radius: 8px;
-  background-color: ${(props) => (props.$isDragging ? "#f0f0f0" : "#fff")};
+  background-color: ${(props) => (props.$isDragging || props.isSelected ? "#f0f0f0" : "#fff")};
   cursor: move;
   display: flex;
   flex-direction: column;

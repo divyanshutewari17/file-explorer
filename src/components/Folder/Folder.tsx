@@ -9,9 +9,10 @@ import { FaFolder } from "react-icons/fa";
 interface FolderProps {
   folder: FolderType;
   onRightClick: (event: React.MouseEvent, folderId: string) => void;
+  isSelected: boolean
 }
 
-const Folder: React.FC<FolderProps> = ({ folder, onRightClick }) => {
+const Folder: React.FC<FolderProps> = ({ folder, onRightClick, isSelected }) => {
   const dispatch = useDispatch();
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(folder.name);
@@ -50,7 +51,7 @@ const Folder: React.FC<FolderProps> = ({ folder, onRightClick }) => {
   };
 
   return (
-    <FolderContainer ref={ref} $isDragging={isDragging} onContextMenu={(e) => onRightClick(e, folder.id)}>
+    <FolderContainer ref={ref} $isDragging={isDragging} onContextMenu={(e) => onRightClick(e, folder.id)} isSelected={isSelected}>
       <FolderIcon>
         <FaFolder />
       </FolderIcon>
